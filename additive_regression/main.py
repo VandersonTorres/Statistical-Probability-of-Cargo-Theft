@@ -1,5 +1,5 @@
+from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
-
 import pandas as pd
 from prophet import Prophet
 
@@ -10,12 +10,37 @@ class ProphetForecast:
         self.data = self.load_data()
         self.full_data = self.prepare_full_data()
         self.model = self.train_prophet_model()
-        self.forecast = self.make_forecast()
+        self.forecast = None
 
     def load_data(self):
         data = pd.read_csv(self.file_path)
         data["Date"] = pd.to_datetime(data["Date"])
         return data
+
+    def append_data(self, new_date, new_value):
+        try:
+            new_date = pd.to_datetime(new_date).strftime('%Y-%m-%d')
+            new_value = int(new_value)
+        except ValueError:
+            print("Formato de data ou valor inválido.")
+            return
+
+        if pd.to_datetime(new_date) in pd.to_datetime(self.data['Date']).values:
+            overwrite = input(f"Já existe uma entrada para {new_date}. Deseja sobrescrever? (S/N): ")
+            if overwrite.lower() != 's':
+                print("Operação cancelada.")
+                return
+            self.data = self.data[self.data['Date'] != new_date]
+
+        new_data = pd.DataFrame({'Date': [new_date], 'Value': [new_value]})
+        self.data = pd.concat([self.data, new_data], ignore_index=True)
+        self.data["Date"] = pd.to_datetime(self.data["Date"])
+        self.data["Value"] = pd.to_numeric(self.data["Value"])
+        self.data = self.data.sort_values('Date')
+        self.full_data = self.prepare_full_data()
+        self.model = self.train_prophet_model()
+        self.data.to_csv(self.file_path, index=False)
+        print("Dados atualizados com sucesso!")
 
     def prepare_full_data(self):
         date_range = pd.date_range(start=self.data["Date"].min(), end=self.data["Date"].max(), freq="D")
@@ -32,10 +57,16 @@ class ProphetForecast:
 
     def make_forecast(self, periods=45):
         future = self.model.make_future_dataframe(periods=periods)
-        return self.model.predict(future)
+        self.forecast = self.model.predict(future)
+        return self.forecast
 
     def plot_forecast(self):
-        self.model.plot(self.forecast)
+        if self.forecast is None:
+            self.make_forecast()
+
+        plt.figure(figsize=(10, 6))
+
+        self.model.plot(self.forecast, ax=plt.gca())
 
         thefts_dates = self.data[self.data["Value"] > 0].copy()
         thefts_dates["thefts_amount"] = thefts_dates["Value"]
@@ -71,12 +102,51 @@ class ProphetForecast:
 
         plt.show()
 
+    def run_forecasting_interface(self):
+        while True:
+            last_date = datetime.now() - timedelta(days=1)
+            autofill_last_date = last_date.strftime('%Y-%m-%d')
+            print("1. Visualizar/ Atualizar dados históricos")
+            print("2. Fazer previsão")
+            print("3. Sair")
 
-def main():
-    file_path = "additive_regression/cargo_thefts_dates.csv"
-    forecast = ProphetForecast(file_path)
-    forecast.plot_forecast()
+            choice = input("Escolha uma opção: ")
+
+            if choice == "1":
+                print(self.data)
+                update = input("Deseja atualizar os dados? (S/N): ")
+                if update.lower() == "s":
+                    new_date = input("Insira a data da ocorrência: (YYYY-MM-DD) ")
+                    new_value = input("Insira a quantidade de ocorrências: ")
+                    self.append_data(new_date, new_value)
+
+                    if not last_date.strftime('%Y-%m-%d') in self.data['Date'].astype(str).values:
+                        self.append_data(autofill_last_date, 0)
+
+                    days = int(input("Insira o número de dias para a previsão: "))
+                    self.make_forecast(periods=days)
+                    self.plot_forecast()
+
+            elif choice == "2":
+                if not last_date.strftime('%Y-%m-%d') in self.data['Date'].astype(str).values:
+                    self.append_data(autofill_last_date, 0)
+                days = int(input("Insira o número de dias para a previsão: "))
+                self.make_forecast(periods=days)
+                self.plot_forecast()
+
+            elif choice == "3":
+                print("SESSÃO FINALIZADA PELO USUÁRIO.")
+                break
+
+            else:
+                print("Escolha inválida. Tente novamente.")
+
+    @classmethod
+    def from_file(cls, file_path):
+        return cls(file_path)
 
 
 if __name__ == "__main__":
-    main()
+    file_path = "additive_regression/cargo_thefts_dates.csv"
+    forecast = ProphetForecast.from_file(file_path)
+    forecast.run_forecasting_interface()
