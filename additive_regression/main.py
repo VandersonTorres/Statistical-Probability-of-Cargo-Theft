@@ -106,9 +106,11 @@ class ProphetForecast:
         while True:
             last_date = datetime.now() - timedelta(days=1)
             autofill_last_date = last_date.strftime('%Y-%m-%d')
-            print("1. Visualizar/ Atualizar dados históricos")
-            print("2. Fazer previsão")
-            print("3. Sair")
+            print(
+                "1. Visualizar/ Atualizar dados históricos\n"
+                "2. Fazer previsão\n"
+                "3. Sair"
+            )
 
             choice = input("Escolha uma opção: ")
 
@@ -121,7 +123,13 @@ class ProphetForecast:
                     self.append_data(new_date, new_value)
 
                     if not last_date.strftime('%Y-%m-%d') in self.data['Date'].astype(str).values:
-                        self.append_data(autofill_last_date, 0)
+                        print(
+                            "1. Consulta atual\n"
+                            "2. Consulta retroativa"
+                        )
+                        query_identifier = input("Escolha uma opção: ")
+                        if query_identifier == "1":
+                            self.append_data(autofill_last_date, 0)
 
                     days = int(input("Insira o número de dias para a previsão: "))
                     self.make_forecast(periods=days)
@@ -129,7 +137,14 @@ class ProphetForecast:
 
             elif choice == "2":
                 if not last_date.strftime('%Y-%m-%d') in self.data['Date'].astype(str).values:
-                    self.append_data(autofill_last_date, 0)
+                    print(
+                        "1. Consulta atual\n"
+                        "2. Consulta retroativa"
+                    )
+                    query_identifier = input("Escolha uma opção: ")
+                    if query_identifier == "1":
+                        self.append_data(autofill_last_date, 0)
+
                 days = int(input("Insira o número de dias para a previsão: "))
                 self.make_forecast(periods=days)
                 self.plot_forecast()
