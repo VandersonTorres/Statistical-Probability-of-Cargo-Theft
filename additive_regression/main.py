@@ -2,6 +2,9 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import pandas as pd
 from prophet import Prophet
+# import tkinter as tk
+# from tkinter import messagebox
+# from tkinter import simpledialog
 
 
 class ProphetForecast:
@@ -86,7 +89,7 @@ class ProphetForecast:
                  color="green", label="Predict", linewidth=1)
 
         for index, row in self.forecast.iloc[future_index].iterrows():
-            if row["yhat"] > 0.05:
+            if row["yhat"] >= 0.05:
                 plt.plot(row["ds"], 1, marker="o", markersize=2, color="purple")
                 plt.plot([row["ds"], row["ds"]], [0.05, 1], color="purple",
                          linestyle="-", alpha=0.3, linewidth=0.3)
@@ -159,6 +162,74 @@ class ProphetForecast:
     @classmethod
     def from_file(cls, file_path):
         return cls(file_path)
+
+
+# class UserInterface:
+#     def __init__(self, forecast):
+#         self.forecast = forecast
+
+#         self.root = tk.Tk()
+#         self.root.title("Previsão de Ocorrências")
+
+#         self.label = tk.Label(self.root, text="Escolha uma opção:")
+#         self.label.pack()
+
+#         self.button_view_update = tk.Button(
+#             self.root, text="Visualizar/Atualizar Dados", command=self.view_update_data
+#         )
+#         self.button_view_update.pack()
+
+#         self.button_make_forecast = tk.Button(self.root, text="Fazer Previsão", command=self.make_forecast)
+#         self.button_make_forecast.pack()
+
+#         self.button_exit = tk.Button(self.root, text="Sair", command=self.exit_program)
+#         self.button_exit.pack()
+
+#     def view_update_data(self):
+#         data = self.forecast.data
+#         messagebox.showinfo("Dados Históricos", data.to_string())
+
+#         update = messagebox.askyesno("Atualizar Dados", "Deseja atualizar os dados?")
+#         if update:
+#             new_date = simpledialog.askstring("Nova Data", "Insira a data da ocorrência (YYYY-MM-DD):")
+#             new_value = simpledialog.askinteger("Nova Quantidade", "Insira a quantidade de ocorrências:")
+#             self.forecast.append_data(new_date, new_value)
+
+#             last_date = self.forecast.data["Date"].max().strftime('%Y-%m-%d')
+#             if last_date not in self.forecast.data['Date'].astype(str).values:
+#                 query_identifier = messagebox.askquestion(
+#                     "Consulta Retroativa", "Deseja fazer uma consulta retroativa?"
+#                 )
+#                 if query_identifier == 'yes':
+#                     self.forecast.append_data(last_date, 0)
+
+#             days = simpledialog.askinteger("Previsão", "Insira o número de dias para a previsão:")
+#             self.forecast.make_forecast(periods=days)
+#             self.forecast.plot_forecast()
+
+#     def make_forecast(self):
+#         last_date = self.forecast.data["Date"].max().strftime('%Y-%m-%d')
+#         if last_date not in self.forecast.data['Date'].astype(str).values:
+#             query_identifier = messagebox.askquestion("Consulta Retroativa", "Deseja fazer uma consulta retroativa?")
+#             if query_identifier == 'yes':
+#                 self.forecast.append_data(last_date, 0)
+
+#         days = simpledialog.askinteger("Previsão", "Insira o número de dias para a previsão:")
+#         self.forecast.make_forecast(periods=days)
+#         self.forecast.plot_forecast()
+
+#     def exit_program(self):
+#         self.root.destroy()
+
+#     def start(self):
+#         self.root.mainloop()
+
+
+# if __name__ == "__main__":
+#     file_path = "additive_regression/cargo_thefts_dates.csv"
+#     forecast = ProphetForecast.from_file(file_path)
+#     gui = UserInterface(forecast)
+#     gui.start()
 
 
 if __name__ == "__main__":
