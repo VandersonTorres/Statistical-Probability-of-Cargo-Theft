@@ -89,9 +89,9 @@ class ProphetForecast:
                  color="green", label="Predict", linewidth=1)
 
         for index, row in self.forecast.iloc[future_index].iterrows():
-            if row["yhat"] >= 0.05:
+            if row["yhat"] >= 0.04:
                 plt.plot(row["ds"], 1, marker="o", markersize=2, color="purple")
-                plt.plot([row["ds"], row["ds"]], [0.05, 1], color="purple",
+                plt.plot([row["ds"], row["ds"]], [0.04, 1], color="purple",
                          linestyle="-", alpha=0.3, linewidth=0.3)
                 plt.text(row["ds"], 0.5, row["ds"].strftime("%Y-%m-%d"),
                          rotation=90, ha="center", color="purple")
