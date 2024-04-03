@@ -125,7 +125,7 @@ class ProphetForecast:
                     new_value = input("Insira a quantidade de ocorrências: ")
                     self.append_data(new_date, new_value)
 
-                    if not last_date.strftime("%Y-%m-%d") in self.data["Date"].astype(str).values:
+                    if last_date.strftime("%Y-%m-%d") not in self.data["Date"].astype(str).values:
                         print(
                             "1. Consulta atual\n"
                             "2. Consulta retroativa"
@@ -139,7 +139,7 @@ class ProphetForecast:
                     self.plot_forecast()
 
             elif choice == "2":
-                if not last_date.strftime("%Y-%m-%d") in self.data["Date"].astype(str).values:
+                if last_date.strftime("%Y-%m-%d") not in self.data["Date"].astype(str).values:
                     print(
                         "1. Consulta atual\n"
                         "2. Consulta retroativa"
